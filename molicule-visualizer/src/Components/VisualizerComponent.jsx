@@ -3,7 +3,7 @@ import * as NGL from 'ngl';
 
 export default class VisualizerComponent extends Component {
  
-    stage = null;
+  stage = null;
   constructor(props) {
     super(props);
     this.container = React.createRef();
@@ -11,7 +11,7 @@ export default class VisualizerComponent extends Component {
 
   componentDidMount() {
     this.stage = new NGL.Stage(this.container.current);
-    this.stage.loadFile('rcsb://7R5K', { defaultRepresentation: true }).then((component) => {
+    this.stage.loadFile('rcsb://7R5K', { defaultRepresentation: false }).then((component) => {
         const representations = component.addRepresentation('cartoon');
         this.stage.autoView();
         this.stage.setParameters({
@@ -20,8 +20,10 @@ export default class VisualizerComponent extends Component {
           });
           
           // Apply custom colors
-          //representations.setColor('red');
+          representations.setColor('red');
     });
+        // Apply hardware acceleration CSS to the container element
+        this.container.current.style.transform = 'translateZ(0)';
   }
 
 

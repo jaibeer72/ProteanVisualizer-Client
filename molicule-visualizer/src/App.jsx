@@ -1,11 +1,11 @@
 import './App.css';
-import VisualizerComponent from './Components/VisualizerComponent';
+import ComparisonComponent from './Components/ComprisionComponent';
 
 
 function App() {
   return (
     <div className="App">
-        <VisualizerComponent />
+        <ComparisonComponent />
     </div>
   );
 }
