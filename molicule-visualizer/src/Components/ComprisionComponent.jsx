@@ -5,6 +5,7 @@ export default class ComparisonComponent extends Component {
     constructor(props) {
         super(props);
         this.container = React.createRef();
+        this.stage = null; // Store the NGL.Stage instance here
       }
 
     componentDidMount() {
