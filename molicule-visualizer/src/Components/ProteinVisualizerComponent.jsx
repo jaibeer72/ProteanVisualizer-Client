@@ -33,7 +33,16 @@ export default class ProteinVisualizerComponent extends Component {
     }
   render() {
     return (
-      <div ref={this.container} className="visualizer-container" />
+    <div className='visualizer-container '>
+      <div ref={this.container} className="ngl-container" >
+      <div className="overlay">
+      <h3>UI Overlay Panel</h3>
+      <button>Button 1</button>
+      <button>Button 2</button>
+      <button>Button 3</button>
+      </div>
+      </div>
+    </div>
     );
   }
 }
