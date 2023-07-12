@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import * as NGL from 'ngl';
 import OverlyComponent from './OverlyComponent';
 import { addOverlay , removeOverlay , changeColor} from '../Stores/Reducers/OverlayReducer';
+import uuid from 'react-uuid';
 
 
 class ProteinVisualizerComponent extends Component {
@@ -13,6 +14,7 @@ class ProteinVisualizerComponent extends Component {
     addOverlay: PropTypes.func.isRequired,
     removeOverlay: PropTypes.func.isRequired,
     changeColor: PropTypes.func.isRequired,
+    overlays: PropTypes.object.isRequired,
   }
 
   constructor(props) {
@@ -20,7 +22,8 @@ class ProteinVisualizerComponent extends Component {
     this.container = React.createRef();
     this.stage = null; // Store the NGL.Stage instance here
     this.proteanArray = [];
-    this.overlay = this.props.addOverlay({color: "red"});
+    this.overlayID = uuid();
+    this.props.addOverlay({id: this.overlayID ,color: "red" });
   }
 
     componentDidMount() {
@@ -30,8 +33,7 @@ class ProteinVisualizerComponent extends Component {
         this.proteanArray = [];
         for (let i = 0; i < this.props.proteinPaths.length; i++) {
             this.proteanArray.push(await this.stage.loadFile(this.props.proteinPaths[i]));
-            this.proteanArray[i].addRepresentation('cartoon',{color: this.overlay.color});
-            this.proteanArray[i].autoView();
+            this.proteanArray[i].addRepresentation('cartoon',{color: this.props.overlays?.[this.overlayID]?.color || "yellow"});
         }
         this.stage.autoView();
         this.stage.viewer.requestRender();
@@ -42,7 +44,7 @@ class ProteinVisualizerComponent extends Component {
 
     componentDidUpdate(prevProps) {
         this.proteanArray.forEach((protean) => {
-        protean.addRepresentation('cartoon',{color: this.overlay.color});
+        protean.addRepresentation('cartoon',{color: this.props.overlays[this.overlayID].color});
         });
         this.stage.autoView();
         this.stage.viewer.requestRender();
@@ -51,7 +53,7 @@ class ProteinVisualizerComponent extends Component {
     return (
     <div className='visualizer-container '>
       <div ref={this.container} className="ngl-container" >
-          <OverlyComponent changeColor={this.props.changeColor} overlayID={this.props.overlay.id}/>
+          <OverlyComponent changeColor={this.props.changeColor} overlayID={this.overlayID}/>
       </div>
     </div>
     );
@@ -60,8 +62,10 @@ class ProteinVisualizerComponent extends Component {
 
 // Map Redux state to React component props
 const mapStateToProps = (state) => {
+  const check = state;
+  const access = check.overlays.overlays;
   return {
-    overlays: state.overlays.overlays,
+    overlays: access,
   };
 };
 
