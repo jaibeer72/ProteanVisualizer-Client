@@ -3,8 +3,9 @@ import React, { Component } from 'react'
 import { connect } from 'react-redux';
 import * as NGL from 'ngl';
 import OverlyComponent from './OverlyComponent';
-import { addOverlay , removeOverlay , changeColor} from '../Stores/Reducers/OverlayReducer';
+import { addOverlay , removeOverlay , changeColor, setProteanArray} from '../Stores/Reducers/OverlayReducer';
 import uuid from 'react-uuid';
+import FeatureViewer from 'feature-viewer';
 
 
 class ProteinVisualizerComponent extends Component {
@@ -31,10 +32,55 @@ class ProteinVisualizerComponent extends Component {
 
     const loadProteins = async () => {
         this.proteanArray = [];
+        const proteanStructures = [];
         for (let i = 0; i < this.props.proteinPaths.length; i++) {
+            let proteanStructureInfo = {};
             this.proteanArray.push(await this.stage.loadFile(this.props.proteinPaths[i]));
             this.proteanArray[i].addRepresentation('cartoon',{color: this.props.overlays?.[this.overlayID]?.color || "yellow"});
+
+            const chains = this.proteanArray[i].structure.getAtomSet(); 
+            // const chainInfo = chains.map((chain) => {
+            //   const atoms = chain.getAtomIndices();
+            //   const residues = chain.getResidueIndices();
+            //   const aminoAcids = residues.map((residueIndex) => {
+            //     const residue = chain.residueStore.resno[residueIndex];
+            //     return residue;
+            //   });
+            //   return { atoms, residues, aminoAcids };
+            // });
+            
+            // Add the structure info to the array
+            proteanStructureInfo = {
+              id : this.proteanArray[i].id,
+              name : this.proteanArray[i].structure.name,
+              path : this.proteanArray[i].structure.path,
+              atomCount : this.proteanArray[i].structure.atomCount,
+              // atomMapDict : this.proteanArray[i].structure.atomMap.dict,
+              // atomMapList : this.proteanArray[i].structure.atomMap.list,
+              //chainInfo : chainInfo,
+            };
+            proteanStructures.push(proteanStructureInfo);
         }
+        let sequence = this.proteanArray[0].structure.getSequence().join("");
+        let ft = new FeatureViewer.createFeature(sequence,
+          '#fv1',
+        {
+            showAxis: true,
+            showSequence: true,
+            brushActive: true, //zoom
+            toolbar:true, //current zoom & mouse position
+            bubbleHelp:true, 
+            zoomMax:50 //define the maximum range of the zoom
+        });
+        ft.addFeature({
+          data: [{x:20,y:32},{x:46,y:100},{x:123,y:167}],
+          name: "test feature 1",
+          className: "test1", //can be used for styling
+          color: "#0F8292",
+          type: "rect" // ['rect', 'path', 'line']
+      });
+
+        this.props.setProteanArray({id: this.overlayID, proteans: proteanStructures});
         this.stage.autoView();
         this.stage.viewer.requestRender();
         // Add representations for the proteins
@@ -53,7 +99,8 @@ class ProteinVisualizerComponent extends Component {
     return (
     <div className='visualizer-container '>
       <div ref={this.container} className="ngl-container" >
-          <OverlyComponent changeColor={this.props.changeColor} overlayID={this.overlayID}/>
+        <div id="fv1"></div>
+          <OverlyComponent changeColor={this.props.changeColor} overlayID={this.overlayID} proteanArray={this.props?.overlays?.[this.overlayID]?.proteans|| []}/>
       </div>
     </div>
     );
@@ -62,8 +109,7 @@ class ProteinVisualizerComponent extends Component {
 
 // Map Redux state to React component props
 const mapStateToProps = (state) => {
-  const check = state;
-  const access = check.overlays.overlays;
+  const access = state.overlays.overlays;
   return {
     overlays: access,
   };
@@ -74,6 +120,9 @@ const mapDispatchToProps = {
   addOverlay,
   removeOverlay,
   changeColor,
+  setProteanArray,
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(ProteinVisualizerComponent);
+export default connect(mapStateToProps, mapDispatchToProps )(ProteinVisualizerComponent);
+
+
