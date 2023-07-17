@@ -39,7 +39,7 @@ class ProteinVisualizerComponent extends Component {
             // Add the structure info to the array
             proteanStructureInfo = {
               id : this.proteanArray[i].id,
-              name : this.proteanArray[i].structure.name,
+              name : this.proteanArray[i].structure.name.split('.').slice(0, -1).join('.'),
               path : this.proteanArray[i].structure.path,
               atomCount : this.proteanArray[i].structure.atomCount,
               sequence : this.proteanArray[i].structure.getSequence().join(""),
