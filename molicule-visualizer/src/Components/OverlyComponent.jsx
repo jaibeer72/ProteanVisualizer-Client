@@ -17,7 +17,7 @@ export default class OverlyComponent extends Component {
       showSequence: true,
       brushActive: true, //zoom
       toolbar: true, //current zoom & mouse position
-      bubbleHelp: true,
+      bubbleHelp: false,
       zoomMax: 50, //define the maximum range of the zoom
       showVariants: false
     }
@@ -34,9 +34,7 @@ export default class OverlyComponent extends Component {
   }
 
   componentDidUpdate(prevProps) {
-
     this.createFeatureViewers();
-
   }
 
   createFeatureViewers() {
@@ -60,23 +58,23 @@ export default class OverlyComponent extends Component {
         featureViewerId,
         this.config
       );
-          // Find the container element that holds the components you want to remove
-    const container = document.querySelector('.multiple-variant-popup');
+      // Find the container element that holds the components you want to remove
+      const container = document.querySelector('.multiple-variant-popup');
 
-    // Find the .add-variant-btn button
-    const addVariantButton = document.querySelector('.add-variant-btn');
+      // Find the .add-variant-btn button
+      const addVariantButton = document.querySelector('.add-variant-btn');
 
-    // If the .add-variant-btn button exists, remove it and its container
-    if (addVariantButton) {
-      // Remove the .add-variant-btn button
-      addVariantButton.remove();
+      // If the .add-variant-btn button exists, remove it and its container
+      if (addVariantButton) {
+        // Remove the .add-variant-btn button
+        addVariantButton.remove();
 
-      // Check if the container element exists before removing it
-      if (container) {
-        // Remove the container element that holds the components you want to remove
-        container.remove();
-      }
-    };
+        // Check if the container element exists before removing it
+        if (container) {
+          // Remove the container element that holds the components you want to remove
+          container.remove();
+        }
+      };
 
       console.log(`${this.FeatureViewerArrays.length} in protean overlay ${this.props.overlayID}`);
     }

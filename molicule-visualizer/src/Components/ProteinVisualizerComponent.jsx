@@ -5,6 +5,7 @@ import * as NGL from 'ngl';
 import OverlyComponent from './OverlyComponent';
 import { addOverlay , removeOverlay , changeColor, setProteanArray} from '../Stores/Reducers/OverlayReducer';
 import uuid from 'react-uuid';
+import { fetchPDBFile } from '../Utils/AxiosCallsHelper';
 
 
 class ProteinVisualizerComponent extends Component {
@@ -33,6 +34,13 @@ class ProteinVisualizerComponent extends Component {
         this.proteanArray = [];
         for (let i = 0; i < this.props.proteinPaths.length; i++) {
             let proteanStructureInfo = {};
+            try{
+              if(this.props.shoudlDisplaySuperImposed)
+              {
+                await fetchPDBFile(this.props.proteinPaths[i]).then(async (response) => {
+                this.proteanArray.push(await this.stage.loadFile( new Blob([response], {type: 'text/plain'}), { ext:'pdb', defaultRepresentation: true }));
+                });
+              }
             this.proteanArray.push(await this.stage.loadFile(this.props.proteinPaths[i]));
             this.proteanArray[i].addRepresentation('cartoon',{color: this.props.overlays?.[this.overlayID]?.color || "yellow"});
             
@@ -45,12 +53,15 @@ class ProteinVisualizerComponent extends Component {
               sequence : this.proteanArray[i].structure.getSequence().join(""),
             };
             this.proteanStructureInfoArray.push(proteanStructureInfo);
+          }
+          catch(error){
+            console.log(error);
+          }
         }
        
         this.props.setProteanArray({id: this.overlayID, proteans: this.proteanStructureInfoArray});
         this.stage.autoView();
         this.stage.viewer.requestRender();
-        // Add representations for the proteins
     }
     loadProteins();
     }  
