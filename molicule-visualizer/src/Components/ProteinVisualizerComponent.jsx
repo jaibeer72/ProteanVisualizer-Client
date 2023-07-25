@@ -10,7 +10,7 @@ import { fetchPDBFile } from '../Utils/AxiosCallsHelper';
 
 class ProteinVisualizerComponent extends Component {
   static propTypes = {
-    proteinPaths: PropTypes.arrayOf(PropTypes.string).isRequired,
+    proteinSequences: PropTypes.arrayOf(PropTypes.string).isRequired,
     shoudlDisplaySuperImposed: PropTypes.bool.isRequired,
     addOverlay: PropTypes.func.isRequired,
     removeOverlay: PropTypes.func.isRequired,
@@ -32,17 +32,22 @@ class ProteinVisualizerComponent extends Component {
     this.stage = new NGL.Stage(this.container.current);
     const loadProteins = async () => {
         this.proteanArray = [];
-        for (let i = 0; i < this.props.proteinPaths.length; i++) {
+        for (let i = 0; i < this.props.proteinSequences.length; i++) {
             let proteanStructureInfo = {};
             try{
               if(this.props.shoudlDisplaySuperImposed)
               {
-                await fetchPDBFile(this.props.proteinPaths[i]).then(async (response) => {
+                await fetchPDBFile(this.props.proteinSequences[i]).then(async (response) => {
                 this.proteanArray.push(await this.stage.loadFile( new Blob([response], {type: 'text/plain'}), { ext:'pdb', defaultRepresentation: true }));
                 });
               }
-            this.proteanArray.push(await this.stage.loadFile(this.props.proteinPaths[i]));
-            this.proteanArray[i].addRepresentation('cartoon',{color: this.props.overlays?.[this.overlayID]?.color || "yellow"});
+              else
+              {
+                this.proteanArray.push(await this.stage.loadFile( this.props.proteinSequences[i], {defaultRepresentation: true}));
+              }
+              // get protean from file
+            // this.proteanArray.push(await this.stage.loadFile(this.props.proteinSequences[i]));
+            // this.proteanArray[i].addRepresentation('cartoon',{color: this.props.overlays?.[this.overlayID]?.color || "yellow"});
             
             // Add the structure info to the array
             proteanStructureInfo = {
@@ -68,7 +73,7 @@ class ProteinVisualizerComponent extends Component {
 
     componentDidUpdate(prevProps) {
         this.proteanArray.forEach((protean) => {
-        protean.addRepresentation('cartoon',{color: this.props.overlays[this.overlayID].color});
+        //protean.addRepresentation('cartoon',{color: this.props.overlays[this.overlayID].color});
         });
         this.stage.autoView();
         this.stage.viewer.requestRender();

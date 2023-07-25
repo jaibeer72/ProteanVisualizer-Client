@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { getProteinDetails_Sequence, suggestProteins } from '../Utils/AxiosCallsHelper';
 
-export default function ProteanSearchComponent() {
+export default function ProteanSearchComponent({ onSelectProtean }) {
     const [query, setQuery] = useState('');
     const [suggestions, setSuggestions] = useState([]);
 
@@ -21,12 +21,14 @@ export default function ProteanSearchComponent() {
             console.error('Error fetching protein suggestions:', error.message);
         }
     };
-    const handleClickSuggestion = async (proteanID , entityID) => {
-        
-        let result = await getProteinDetails_Sequence(proteanID, entityID);
-        console.log(result);
-
-      };
+    const handleClickSuggestion = async (proteanID, entityID) => {
+        try {
+            const protein = await getProteinDetails_Sequence(proteanID, entityID);
+            onSelectProtean(proteanID);
+        } catch (error) {
+            console.error('Error fetching protein details:', error.message);
+        }
+    };
     return (
         <div>
             <input
@@ -39,7 +41,7 @@ export default function ProteanSearchComponent() {
             {suggestions.length > 0 && (
                 <ul>
                     {suggestions.map((suggestion, index) => (
-                        <li key={index} onClick={()=>handleClickSuggestion(suggestion.proteinId,suggestion.entityId)}>
+                        <li key={index} onClick={() => handleClickSuggestion(suggestion.proteinId, suggestion.entityId)}>
                             {suggestion.proteinId} - {suggestion.entityId}
                         </li>
                     ))}
