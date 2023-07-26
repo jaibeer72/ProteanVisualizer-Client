@@ -30,7 +30,7 @@ export default function ProteanSearchComponent({ onSelectProtean }) {
         }
     };
     return (
-        <div>
+        <div className='search-box'>
             <input
                 type="text"
                 value={query}

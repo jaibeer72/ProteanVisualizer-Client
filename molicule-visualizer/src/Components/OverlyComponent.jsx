@@ -87,6 +87,7 @@ export default class OverlyComponent extends Component {
           <div className="overlay" key={index}>
             <div>{protean.name}</div>
             <div id={`feature-viewer${index}-${protean.name}`} className="feature-viewer-container" ></div>
+            <button>testButton</button>
           </div>
         ))
         }
