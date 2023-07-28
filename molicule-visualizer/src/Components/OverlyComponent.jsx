@@ -25,6 +25,8 @@ export default class OverlyComponent extends Component {
     }
     this.FeatureViewerArrays = []
     this.ProteanReprisentations = [];
+
+    this.createFeatureViewers = this.createFeatureViewers.bind(this);
   }
 
   componentDidMount() {
@@ -44,8 +46,6 @@ export default class OverlyComponent extends Component {
 
     for (let index = 0; index < proteanArray.length; index++) {
       const featureViewerId = `#feature-viewer${index}-${proteanArray[index].name}`;
-      const reps = this.props.getProteanRepresentation(proteanArray[index].name); 
-      console.log(reps);
 
       // Check if the FeatureViewer instance exists
       if (this.FeatureViewerArrays[index]) {

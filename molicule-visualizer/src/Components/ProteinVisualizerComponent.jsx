@@ -27,6 +27,8 @@ class ProteinVisualizerComponent extends Component {
     this.props.addOverlay({ id: this.overlayID, color: "red" });
     this.changeRepriestntation = this.changeRepriestntation.bind(this);
     this.getProteanReprisentations = this.getProteanReprisentations.bind(this);
+    this.AddProteanToArray = this.AddProteanToArray.bind(this);
+    this.AddProteanInfoToInfoArray = this.AddProteanInfoToInfoArray.bind(this);
   }
 
   componentDidMount() {
@@ -34,34 +36,13 @@ class ProteinVisualizerComponent extends Component {
     // need to refract this code
     const loadProteins = async () => {
       for (let i = 0; i < this.props.proteinSequences.length; i++) {
-        let proteanStructureInfo = {};
         try {
           if (this.props.shoudlDisplaySuperImposed) {
-            this.proteanArray.push(await this.stage.loadFile(new Blob([this.props.proteinSequences[i]], { type: 'text/plain' }), { ext: 'pdb', defaultRepresentation: true }));
-            this.proteanArray.push(await this.stage.loadFile(this.props.proteinSequences[i + 1], { defaultRepresentation: true }));
+            await this.AddProteanToArray(this.props.proteinSequences[i], true);
+            await this.AddProteanToArray(this.props.proteinSequences[++i]);
           }
           else {
-            this.proteanArray.push(await this.stage.loadFile(this.props.proteinSequences[i], { defaultRepresentation: true }));
-          }
-
-          proteanStructureInfo = {
-            id: this.proteanArray[i].id,
-            name: this.proteanArray[i].structure.name.replace(/\.pdb(\.[^.]+)?$/g, ''),
-            path: this.proteanArray[i].structure.path,
-            atomCount: this.proteanArray[i].structure.atomCount,
-            sequence: this.proteanArray[i].structure.getSequence().join(""),
-          };
-          this.proteanStructureInfoArray.push(proteanStructureInfo);
-          if (this.props.shoudlDisplaySuperImposed) {
-            i++;
-            proteanStructureInfo = {
-              id: this.proteanArray[i].id,
-              name: this.proteanArray[i].structure.name.replace(/\.pdb(\.[^.]+)?$/g, ''),
-              path: this.proteanArray[i].structure.path,
-              atomCount: this.proteanArray[i].structure.atomCount,
-              sequence: this.proteanArray[i].structure.getSequence().join(""),
-            };
-            this.proteanStructureInfoArray.push(proteanStructureInfo);
+            await this.AddProteanToArray(this.props.proteinSequences[i]);
           }
         }
         catch (error) {
@@ -74,9 +55,36 @@ class ProteinVisualizerComponent extends Component {
       this.stage.viewer.requestRender();
     }
     loadProteins();
-    
   }
 
+  async AddProteanToArray(protean, shouldLoadAsBlob = false) {
+    try {
+      if (shouldLoadAsBlob) {
+        const res = await this.stage.loadFile(new Blob([protean], { type: 'text/plain' }), { ext: 'pdb', defaultRepresentation: true });
+        this.proteanArray.push(res);
+        this.AddProteanInfoToInfoArray(res, true);
+      }
+      else {
+        const res = await this.stage.loadFile(protean, { defaultRepresentation: true });
+        this.proteanArray.push(res);
+        this.AddProteanInfoToInfoArray(res);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  AddProteanInfoToInfoArray(protean, sameNameId = false) {
+    const proteanStructureInfo = {
+      // if should be the custome name if it's not nulls else it should be the id
+      id: protean.structure.id,
+      name: sameNameId ? protean.structure.id : protean.structure.name.replace(/\.pdb(\.[^.]+)?$/g, ''),
+      path: protean.structure.path,
+      atomCount: protean.structure.atomCount,
+      sequence: protean.structure.getSequence().join(""),
+    };
+    this.proteanStructureInfoArray.push(proteanStructureInfo);
+  }
 
   /// Change the representation of a protean
   changeRepriestntation(proteanName, reprisentationType) {
@@ -88,15 +96,16 @@ class ProteinVisualizerComponent extends Component {
   }
 
   getProteanReprisentations(proteanName) {
+    let reps = [];
     const protean = this.proteanArray.find((protean) => proteanName === protean.structure.id);
-    this.stage.autoView();
-    return protean.reprList;
+    reps = protean.reprList;
+    return reps;
   }
 
   componentDidUpdate(prevProps) {
     this.stage.handleResize();
     this.proteanArray.forEach((protean) => {
-      protean.addRepresentation('cartoon', { color: this.props.overlays[this.overlayID].color });
+      //protean.addRepresentation('cartoon', { color: this.props.overlays[this.overlayID].color });
     });
     this.stage.autoView();
     this.stage.viewer.requestRender();
