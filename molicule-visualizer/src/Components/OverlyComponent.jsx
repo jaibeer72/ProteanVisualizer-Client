@@ -7,6 +7,8 @@ export default class OverlyComponent extends Component {
     overlayID: PropTypes.string.isRequired,
     changeColor: PropTypes.func.isRequired,
     proteanArray: PropTypes.array.isRequired,
+    setProteanRepresentation: PropTypes.func.isRequired,
+    getProteanRepresentation: PropTypes.func.isRequired,
   }
 
   constructor(props) {
@@ -18,17 +20,17 @@ export default class OverlyComponent extends Component {
       brushActive: true, //zoom
       toolbar: true, //current zoom & mouse position
       bubbleHelp: false,
-      zoomMax: 50, //define the maximum range of the zoom
+      zoomMax: 100, //define the maximum range of the zoom
       showVariants: false
     }
     this.FeatureViewerArrays = []
+    this.ProteanReprisentations = [];
   }
 
   componentDidMount() {
     console.log(this.props.proteanArray);
     this.createFeatureViewers();
     if (this.props.proteanArray.length > 0) {
-      console.log("createFeatureViewers");
       this.createFeatureViewers();
     }
   }
@@ -42,6 +44,8 @@ export default class OverlyComponent extends Component {
 
     for (let index = 0; index < proteanArray.length; index++) {
       const featureViewerId = `#feature-viewer${index}-${proteanArray[index].name}`;
+      const reps = this.props.getProteanRepresentation(proteanArray[index].name); 
+      console.log(reps);
 
       // Check if the FeatureViewer instance exists
       if (this.FeatureViewerArrays[index]) {
@@ -58,6 +62,8 @@ export default class OverlyComponent extends Component {
         featureViewerId,
         this.config
       );
+
+      this.FeatureViewerArrays[index].zoom(0, proteanArray[index].sequence.length);
       // Find the container element that holds the components you want to remove
       const container = document.querySelector('.multiple-variant-popup');
 
@@ -86,12 +92,16 @@ export default class OverlyComponent extends Component {
         {this.props.proteanArray.map((protean, index) => (
           <div className="overlay" key={index}>
             <div>{protean.name}</div>
-            <div id={`feature-viewer${index}-${protean.name}`} className="feature-viewer-container" ></div>
-            <button>testButton</button>
+            <div id={`feature-viewer${index}-${protean.name}`} className="feature-viewer-container"></div>
+            {this.props.getProteanRepresentation(protean.name).map((representation, index) => (
+              <div key={index}>
+                <input type="radio" id={`representation-${representation.name}`} name={`representation-${protean.name}`} />
+                <label htmlFor={`representation-${representation.name}`}>{representation.name}</label>
+              </div>
+            ))}
           </div>
-        ))
-        }
+        ))}
       </div>
-    )
+    );
   }
 }
