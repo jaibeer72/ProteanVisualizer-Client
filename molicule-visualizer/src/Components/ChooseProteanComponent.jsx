@@ -1,7 +1,6 @@
 import React, { Component } from 'react'
 import ProteanSearchComponent from './ProteanSearchComponent';
 import ProteanVisualizerComponent from './ProteinVisualizerComponent';
-import { PDB_DOWNLOAD_URL } from '../Utils/config';
 import { fetchSuperimposedPDBFile } from '../Utils/AxiosCallsHelper';
 
 export default class ChooseProteanComponent extends Component {

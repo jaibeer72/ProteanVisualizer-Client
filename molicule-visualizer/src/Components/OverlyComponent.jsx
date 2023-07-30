@@ -1,6 +1,8 @@
 import PropTypes from 'prop-types'
 import React, { Component } from 'react'
 import FeatureViewer from 'feature-viewer';
+import Draggable from 'react-draggable';
+import '../Styles/OverlayStyles.css'
 
 export default class OverlyComponent extends Component {
   static propTypes = {
@@ -45,7 +47,7 @@ export default class OverlyComponent extends Component {
     const { proteanArray } = this.props;
 
     for (let index = 0; index < proteanArray.length; index++) {
-      const featureViewerId = `#feature-viewer${index}-${proteanArray[index].name}`;
+      const featureViewerId = `#feature-viewer${index}-${proteanArray[index].name}-${this.props.overlayID}`;
 
       // Check if the FeatureViewer instance exists
       if (this.FeatureViewerArrays[index]) {
@@ -88,20 +90,29 @@ export default class OverlyComponent extends Component {
 
   render() {
     return (
+      <Draggable bounds="parent">
       <div className="overlay-container">
         {this.props.proteanArray.map((protean, index) => (
           <div className="overlay" key={index}>
             <div>{protean.name}</div>
-            <div id={`feature-viewer${index}-${protean.name}`} className="feature-viewer-container"></div>
+            <div id={`feature-viewer${index}-${protean.name}-${this.props.overlayID}`} className="feature-viewer-container"></div>
             {this.props.getProteanRepresentation(protean.name).map((representation, index) => (
               <div key={index}>
-                <input type="radio" id={`representation-${representation.name}`} name={`representation-${protean.name}`} />
+                {/* turn visibity on or off based on the radio button of reprisentation.visibility  */}
+                <input 
+                type="checkbox" 
+                id={`representation-${representation.name}`} 
+                name={`representation-${protean.name}`} 
+                checked={representation.visible}
+                />
                 <label htmlFor={`representation-${representation.name}`}>{representation.name}</label>
+                
               </div>
             ))}
           </div>
         ))}
       </div>
+      </Draggable>
     );
   }
 }
