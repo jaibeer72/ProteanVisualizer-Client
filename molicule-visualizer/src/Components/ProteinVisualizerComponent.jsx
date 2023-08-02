@@ -97,7 +97,7 @@ class ProteinVisualizerComponent extends Component {
 
   addRepresentationToProtean(proteanName, reprisentationType) {
     const protean = this.proteanArray.find((protean) => proteanName === protean.structure.id);
-    protean.addRepresentation(reprisentationType.type, reprisentationType.options);
+    protean.addRepresentation(reprisentationType.type, reprisentationType.parms);
     this.stage.autoView();
     this.stage.viewer.requestRender();
   }

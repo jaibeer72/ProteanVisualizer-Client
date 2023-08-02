@@ -3,8 +3,8 @@ import React, { Component } from 'react'
 import FeatureViewer from 'feature-viewer';
 import Draggable from 'react-draggable';
 import '../Styles/OverlayStyles.css'
-import { RepresentationRegistry } from 'ngl';
-import { ApplyableReprisentations, RepMap } from '../Utils/ReprisentationListHelper';
+import AddNewReprisentationPopUp from './AddNewReprisentationPopUp';
+import CollapsibleComponent from './CollapsibleComponent';
 
 export default class OverlyComponent extends Component {
   static propTypes = {
@@ -36,15 +36,28 @@ export default class OverlyComponent extends Component {
     this.getApplyablePreriesentationList = this.getApplyablePreriesentationList.bind(this);
 
     this.state = {
-      reprisentationList: [],
-    };
-
-    this.repExample = {
-      type : ApplyableReprisentations['angle'].type,
-      params : {
-      }
+      ProteanRepState: [],
+      isPopupOpen: false,
     };
   }
+
+
+  handleOpenPopup = () => {
+    this.setState({ isPopupOpen: true });
+  };
+
+  handleClosePopup = () => {
+    this.setState({ isPopupOpen: false });
+  };
+
+  handleAddRepresentation = (proteanName,representation, parameters) => {
+    console.log("Representation:", representation);
+    console.log("Parameters:", parameters);
+    // Here you can add the representation to the protean
+    // this.props.addRepresentationToProtean(proteanName, { type: representation, params: parameters });
+    this.props.addRepresentationToProtean(proteanName ,  { type: representation, params: parameters });
+    this.handleClosePopup();
+  };
 
   componentDidMount() {
     this.getApplyablePreriesentationList();
@@ -103,17 +116,19 @@ export default class OverlyComponent extends Component {
           // Remove the container element that holds the components you want to remove
           container.remove();
         }
-      };
+      }
     }
   }
 
   render() {
     return (
-      <Draggable bounds="parent">
+      <Draggable bounds="parent" handle=".drag-handle">
       <div className="overlay-container">
         {this.props.proteanArray.map((protean, index) => (
           <div className="overlay" key={index}>
             <div>{protean.name}</div>
+            <div className="drag-handle"> drage me here</div>
+            <CollapsibleComponent>
             <div id={`feature-viewer${index}-${protean.name}-${this.props.overlayID}`} className="feature-viewer-container"></div>
             {this.props.getProteanRepresentation(protean.name).map((representation, index) => (
               <div key={index}>
@@ -123,13 +138,20 @@ export default class OverlyComponent extends Component {
                 id={`representation-${representation.name}`} 
                 name={`representation-${protean.name}`} 
                 checked={representation.visible}
-                onChange={(e) => {representation.setVisibility(e.target.checked);}}
+                onChange={(e) => {representation.setVisibility(e.target.checked); this.setState({checkMark: true})}}
                 />
                 <label htmlFor={`representation-${representation.name}`}>{representation.name}</label>
-                <button onClick={() => this.props.addRepresentationToProtean(protean.name , this.repExample)}>remove Reprisentaion</button>
-                
+                <button onClick={() => {this.props.removeProteanRepresentation(protean.name , representation); this.setState({checkMark: true})}}>remove Reprisentaion</button>   
               </div>
             ))}
+            <button id='Add-Rep-Button' onClick={this.handleOpenPopup}>Add Reprisentaion</button> 
+          <AddNewReprisentationPopUp
+            isOpen={this.state.isPopupOpen}
+            onClose={this.handleClosePopup}
+            onSubmit={this.handleAddRepresentation}
+            proteanName = {protean.name}
+          /> 
+          </CollapsibleComponent>
           </div>
         ))}
       </div>
