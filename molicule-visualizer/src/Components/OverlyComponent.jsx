@@ -3,14 +3,17 @@ import React, { Component } from 'react'
 import FeatureViewer from 'feature-viewer';
 import Draggable from 'react-draggable';
 import '../Styles/OverlayStyles.css'
+import { RepresentationRegistry } from 'ngl';
+import { ApplyableReprisentations, RepMap } from '../Utils/ReprisentationListHelper';
 
 export default class OverlyComponent extends Component {
   static propTypes = {
     overlayID: PropTypes.string.isRequired,
     changeColor: PropTypes.func.isRequired,
     proteanArray: PropTypes.array.isRequired,
-    setProteanRepresentation: PropTypes.func.isRequired,
     getProteanRepresentation: PropTypes.func.isRequired,
+    removeProteanRepresentation: PropTypes.func.isRequired,
+    addRepresentationToProtean: PropTypes.func.isRequired,
   }
 
   constructor(props) {
@@ -27,12 +30,24 @@ export default class OverlyComponent extends Component {
     }
     this.FeatureViewerArrays = []
     this.ProteanReprisentations = [];
+    this.applyableReprisentationList = [];
 
     this.createFeatureViewers = this.createFeatureViewers.bind(this);
+    this.getApplyablePreriesentationList = this.getApplyablePreriesentationList.bind(this);
+
+    this.state = {
+      reprisentationList: [],
+    };
+
+    this.repExample = {
+      type : ApplyableReprisentations['angle'].type,
+      params : {
+      }
+    };
   }
 
   componentDidMount() {
-    console.log(this.props.proteanArray);
+    this.getApplyablePreriesentationList();
     this.createFeatureViewers();
     if (this.props.proteanArray.length > 0) {
       this.createFeatureViewers();
@@ -41,6 +56,12 @@ export default class OverlyComponent extends Component {
 
   componentDidUpdate(prevProps) {
     this.createFeatureViewers();
+  }
+
+  getApplyablePreriesentationList() {
+    // getting this From NGL to get supported reprisentations this is a Map
+    // access angle from applyablerepriesntations 
+    
   }
 
   createFeatureViewers() {
@@ -83,8 +104,6 @@ export default class OverlyComponent extends Component {
           container.remove();
         }
       };
-
-      console.log(`${this.FeatureViewerArrays.length} in protean overlay ${this.props.overlayID}`);
     }
   }
 
@@ -104,8 +123,10 @@ export default class OverlyComponent extends Component {
                 id={`representation-${representation.name}`} 
                 name={`representation-${protean.name}`} 
                 checked={representation.visible}
+                onChange={(e) => {representation.setVisibility(e.target.checked);}}
                 />
                 <label htmlFor={`representation-${representation.name}`}>{representation.name}</label>
+                <button onClick={() => this.props.addRepresentationToProtean(protean.name , this.repExample)}>remove Reprisentaion</button>
                 
               </div>
             ))}

@@ -25,10 +25,11 @@ class ProteinVisualizerComponent extends Component {
     this.proteanStructureInfoArray = []; // Stores Seralizable info about the proteins
     this.overlayID = uuid();
     this.props.addOverlay({ id: this.overlayID, color: "red" });
-    this.changeRepriestntation = this.changeRepriestntation.bind(this);
     this.getProteanReprisentations = this.getProteanReprisentations.bind(this);
     this.AddProteanToArray = this.AddProteanToArray.bind(this);
     this.AddProteanInfoToInfoArray = this.AddProteanInfoToInfoArray.bind(this);
+    this.removeRepresentationFromProtean = this.removeRepresentationFromProtean.bind(this);
+    this.addRepresentationToProtean = this.addRepresentationToProtean.bind(this);
   }
 
   componentDidMount() {
@@ -86,14 +87,6 @@ class ProteinVisualizerComponent extends Component {
     this.proteanStructureInfoArray.push(proteanStructureInfo);
   }
 
-  /// Change the representation of a protean
-  changeRepriestntation(proteanName, reprisentationType) {
-    const protean = this.proteanArray.find((protean) => proteanName === protean.id);
-    protean.removeAllRepresentations();
-    protean.addRepresentation(reprisentationType);
-    this.stage.autoView();
-    this.stage.viewer.requestRender();
-  }
 
   getProteanReprisentations(proteanName) {
     let reps = [];
@@ -102,6 +95,20 @@ class ProteinVisualizerComponent extends Component {
     return reps;
   }
 
+  addRepresentationToProtean(proteanName, reprisentationType) {
+    const protean = this.proteanArray.find((protean) => proteanName === protean.structure.id);
+    protean.addRepresentation(reprisentationType.type, reprisentationType.options);
+    this.stage.autoView();
+    this.stage.viewer.requestRender();
+  }
+
+  removeRepresentationFromProtean(proteanName, reprisentationType) {
+    const protean = this.proteanArray.find((protean) => proteanName === protean.structure.id);
+    protean.removeRepresentation(reprisentationType);
+    this.stage.autoView();
+    this.stage.viewer.requestRender();
+  }
+  
   componentDidUpdate(prevProps) {
     this.stage.handleResize();
     this.proteanArray.forEach((protean) => {
@@ -118,8 +125,9 @@ class ProteinVisualizerComponent extends Component {
             changeColor={this.props.changeColor}
             overlayID={this.overlayID}
             proteanArray={this?.proteanStructureInfoArray || []}
-            setProteanRepresentation={this.changeRepriestntation}
             getProteanRepresentation={this.getProteanReprisentations}
+            removeProteanRepresentation={this.removeRepresentationFromProtean}  
+            addRepresentationToProtean={this.addRepresentationToProtean}
           />
         </div>
       </div>
