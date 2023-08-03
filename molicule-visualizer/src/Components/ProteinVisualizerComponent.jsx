@@ -15,6 +15,7 @@ class ProteinVisualizerComponent extends Component {
     removeOverlay: PropTypes.func.isRequired,
     changeColor: PropTypes.func.isRequired,
     overlays: PropTypes.object.isRequired,
+    usAlignment: PropTypes.string,
   }
 
   constructor(props) {
@@ -25,45 +26,25 @@ class ProteinVisualizerComponent extends Component {
     this.proteanStructureInfoArray = []; // Stores Seralizable info about the proteins
     this.overlayID = uuid();
     this.props.addOverlay({ id: this.overlayID, color: "red" });
+    this.getProteanReprisentations = this.getProteanReprisentations.bind(this);
+    this.AddProteanToArray = this.AddProteanToArray.bind(this);
+    this.AddProteanInfoToInfoArray = this.AddProteanInfoToInfoArray.bind(this);
+    this.removeRepresentationFromProtean = this.removeRepresentationFromProtean.bind(this);
+    this.addRepresentationToProtean = this.addRepresentationToProtean.bind(this);
   }
 
   componentDidMount() {
     this.stage = new NGL.Stage(this.container.current);
+    // need to refract this code
     const loadProteins = async () => {
-      this.proteanArray = [];
       for (let i = 0; i < this.props.proteinSequences.length; i++) {
-        let proteanStructureInfo = {};
         try {
           if (this.props.shoudlDisplaySuperImposed) {
-              this.proteanArray.push(await this.stage.loadFile(new Blob([this.props.proteinSequences[i]], { type: 'text/plain' }), { ext: 'pdb', defaultRepresentation: true }));
-              this.proteanArray.push(await this.stage.loadFile(this.props.proteinSequences[i+1], { defaultRepresentation: true }));
+            await this.AddProteanToArray(this.props.proteinSequences[i], true);
+            await this.AddProteanToArray(this.props.proteinSequences[++i]);
           }
           else {
-            this.proteanArray.push(await this.stage.loadFile(this.props.proteinSequences[i], { defaultRepresentation: true }));
-          }
-          // get protean from file
-          // this.proteanArray.push(await this.stage.loadFile(this.props.proteinSequences[i]));
-          // this.proteanArray[i].addRepresentation('cartoon',{color: this.props.overlays?.[this.overlayID]?.color || "yellow"});
-
-          // Add the structure info to the array
-          proteanStructureInfo = {
-            id: this.proteanArray[i].id,
-            name: this.proteanArray[i].structure.name.replace(/\.pdb(\.[^.]+)?$/g, ''),
-            path: this.proteanArray[i].structure.path,
-            atomCount: this.proteanArray[i].structure.atomCount,
-            sequence: this.proteanArray[i].structure.getSequence().join(""),
-          };
-          this.proteanStructureInfoArray.push(proteanStructureInfo);
-          if(this.props.shoudlDisplaySuperImposed){
-            i++;
-                      proteanStructureInfo = {
-            id: this.proteanArray[i].id,
-            name: this.proteanArray[i].structure.name.replace(/\.pdb(\.[^.]+)?$/g, ''),
-            path: this.proteanArray[i].structure.path,
-            atomCount: this.proteanArray[i].structure.atomCount,
-            sequence: this.proteanArray[i].structure.getSequence().join(""),
-          };
-          this.proteanStructureInfoArray.push(proteanStructureInfo);
+            await this.AddProteanToArray(this.props.proteinSequences[i]);
           }
         }
         catch (error) {
@@ -71,17 +52,68 @@ class ProteinVisualizerComponent extends Component {
         }
       }
 
-      this.props.setProteanArray({ id: this.overlayID, proteans: this.proteanStructureInfoArray });
+      this.props.setProteanArray({ id: this.overlayID, proteanInfoArray: this.proteanStructureInfoArray });
       this.stage.autoView();
       this.stage.viewer.requestRender();
     }
     loadProteins();
   }
 
+  async AddProteanToArray(protean, shouldLoadAsBlob = false) {
+    try {
+      if (shouldLoadAsBlob) {
+        const res = await this.stage.loadFile(new Blob([protean], { type: 'text/plain' }), { ext: 'pdb', defaultRepresentation: true });
+        this.proteanArray.push(res);
+        this.AddProteanInfoToInfoArray(res, true);
+      }
+      else {
+        const res = await this.stage.loadFile(protean, { defaultRepresentation: true });
+        this.proteanArray.push(res);
+        this.AddProteanInfoToInfoArray(res);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  AddProteanInfoToInfoArray(protean, sameNameId = false) {
+    const proteanStructureInfo = {
+      // if should be the custome name if it's not nulls else it should be the id
+      id: protean.structure.id,
+      name: sameNameId ? protean.structure.id : protean.structure.name.replace(/\.pdb(\.[^.]+)?$/g, ''),
+      path: protean.structure.path,
+      atomCount: protean.structure.atomCount,
+      sequence: protean.structure.getSequence().join(""),
+    };
+    this.proteanStructureInfoArray.push(proteanStructureInfo);
+  }
+
+
+  getProteanReprisentations(proteanName) {
+    let reps = [];
+    const protean = this.proteanArray.find((protean) => proteanName === protean.structure.id);
+    reps = protean.reprList;
+    return reps;
+  }
+
+  addRepresentationToProtean(proteanName, reprisentationType) {
+    const protean = this.proteanArray.find((protean) => proteanName === protean.structure.id);
+    protean.addRepresentation(reprisentationType.type, reprisentationType.parms);
+    this.stage.autoView();
+    this.stage.viewer.requestRender();
+  }
+
+  removeRepresentationFromProtean(proteanName, reprisentationType) {
+    const protean = this.proteanArray.find((protean) => proteanName === protean.structure.id);
+    protean.removeRepresentation(reprisentationType);
+    this.stage.autoView();
+    this.stage.viewer.requestRender();
+  }
+  
   componentDidUpdate(prevProps) {
     this.stage.handleResize();
     this.proteanArray.forEach((protean) => {
-      //protean.addRepresentation('cartoon',{color: this.props.overlays[this.overlayID].color});
+      //protean.addRepresentation('cartoon', { color: this.props.overlays[this.overlayID].color });
     });
     this.stage.autoView();
     this.stage.viewer.requestRender();
@@ -90,7 +122,15 @@ class ProteinVisualizerComponent extends Component {
     return (
       <div className='visualizer-container '>
         <div ref={this.container} className="ngl-container" >
-          <OverlyComponent changeColor={this.props.changeColor} overlayID={this.overlayID} proteanArray={this?.proteanStructureInfoArray || []} />
+          <OverlyComponent
+            changeColor={this.props.changeColor}
+            overlayID={this.overlayID}
+            proteanArray={this?.proteanStructureInfoArray || []}
+            getProteanRepresentation={this.getProteanReprisentations}
+            removeProteanRepresentation={this.removeRepresentationFromProtean}  
+            addRepresentationToProtean={this.addRepresentationToProtean}
+            usAlignment={this.props.usAlignment}
+          />
         </div>
       </div>
     );

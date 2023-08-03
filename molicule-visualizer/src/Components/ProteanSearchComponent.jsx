@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { getProteinDetails_Sequence, suggestProteins } from '../Utils/AxiosCallsHelper';
+import {suggestProteins } from '../Utils/AxiosCallsHelper';
 
 export default function ProteanSearchComponent({ onSelectProtean }) {
     const [query, setQuery] = useState('');
@@ -23,7 +23,6 @@ export default function ProteanSearchComponent({ onSelectProtean }) {
     };
     const handleClickSuggestion = async (proteanID, entityID) => {
         try {
-            const protein = await getProteinDetails_Sequence(proteanID, entityID);
             onSelectProtean(proteanID);
         } catch (error) {
             console.error('Error fetching protein details:', error.message);
