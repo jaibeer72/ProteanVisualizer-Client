@@ -5,6 +5,7 @@ import Draggable from 'react-draggable';
 import '../Styles/OverlayStyles.css'
 import AddNewReprisentationPopUp from './AddNewReprisentationPopUp';
 import CollapsibleComponent from './CollapsibleComponent';
+import SequenceAlignment from './SequenceAlignment';
 
 export default class OverlyComponent extends Component {
   static propTypes = {
@@ -14,6 +15,7 @@ export default class OverlyComponent extends Component {
     getProteanRepresentation: PropTypes.func.isRequired,
     removeProteanRepresentation: PropTypes.func.isRequired,
     addRepresentationToProtean: PropTypes.func.isRequired,
+    usAlignment: PropTypes.string,
   }
 
   constructor(props) {
@@ -50,12 +52,12 @@ export default class OverlyComponent extends Component {
     this.setState({ isPopupOpen: false });
   };
 
-  handleAddRepresentation = (proteanName,representation, parameters) => {
+  handleAddRepresentation = (proteanName, representation, parameters) => {
     console.log("Representation:", representation);
     console.log("Parameters:", parameters);
     // Here you can add the representation to the protean
     // this.props.addRepresentationToProtean(proteanName, { type: representation, params: parameters });
-    this.props.addRepresentationToProtean(proteanName ,  { type: representation, params: parameters });
+    this.props.addRepresentationToProtean(proteanName, { type: representation, params: parameters });
     this.handleClosePopup();
   };
 
@@ -74,7 +76,7 @@ export default class OverlyComponent extends Component {
   getApplyablePreriesentationList() {
     // getting this From NGL to get supported reprisentations this is a Map
     // access angle from applyablerepriesntations 
-    
+
   }
 
   createFeatureViewers() {
@@ -123,38 +125,43 @@ export default class OverlyComponent extends Component {
   render() {
     return (
       <Draggable bounds="parent" handle=".drag-handle">
-      <div className="overlay-container">
-        {this.props.proteanArray.map((protean, index) => (
-          <div className="overlay" key={index}>
-            <div>{protean.name}</div>
-            <div className="drag-handle"> drage me here</div>
-            <CollapsibleComponent>
-            <div id={`feature-viewer${index}-${protean.name}-${this.props.overlayID}`} className="feature-viewer-container"></div>
-            {this.props.getProteanRepresentation(protean.name).map((representation, index) => (
-              <div key={index}>
-                {/* turn visibity on or off based on the radio button of reprisentation.visibility  */}
-                <input 
-                type="checkbox" 
-                id={`representation-${representation.name}`} 
-                name={`representation-${protean.name}`} 
-                checked={representation.visible}
-                onChange={(e) => {representation.setVisibility(e.target.checked); this.setState({checkMark: true})}}
+        <div className="overlay-container">
+          {this.props.proteanArray.map((protean, index) => (
+            <div className="overlay" key={index}>
+              <div>{protean.name}</div>
+              <div className="drag-handle"> drage me here</div>
+              <CollapsibleComponent>
+                <div id={`feature-viewer${index}-${protean.name}-${this.props.overlayID}`} className="feature-viewer-container"></div>
+                {this.props.getProteanRepresentation(protean.name).map((representation, index) => (
+                  <div key={index}>
+                    {/* turn visibity on or off based on the radio button of reprisentation.visibility  */}
+                    <input
+                      type="checkbox"
+                      id={`representation-${representation.name}`}
+                      name={`representation-${protean.name}`}
+                      checked={representation.visible}
+                      onChange={(e) => { representation.setVisibility(e.target.checked); this.setState({ checkMark: true }) }}
+                    />
+                    <label htmlFor={`representation-${representation.name}`}>{representation.name}</label>
+                    <button onClick={() => { this.props.removeProteanRepresentation(protean.name, representation); this.setState({ checkMark: true }) }}>remove Reprisentaion</button>
+                  </div>
+                ))}
+                <button id='Add-Rep-Button' onClick={this.handleOpenPopup}>Add Reprisentaion</button>
+                <AddNewReprisentationPopUp
+                  isOpen={this.state.isPopupOpen}
+                  onClose={this.handleClosePopup}
+                  onSubmit={this.handleAddRepresentation}
+                  proteanName={protean.name}
                 />
-                <label htmlFor={`representation-${representation.name}`}>{representation.name}</label>
-                <button onClick={() => {this.props.removeProteanRepresentation(protean.name , representation); this.setState({checkMark: true})}}>remove Reprisentaion</button>   
-              </div>
-            ))}
-            <button id='Add-Rep-Button' onClick={this.handleOpenPopup}>Add Reprisentaion</button> 
-          <AddNewReprisentationPopUp
-            isOpen={this.state.isPopupOpen}
-            onClose={this.handleClosePopup}
-            onSubmit={this.handleAddRepresentation}
-            proteanName = {protean.name}
-          /> 
-          </CollapsibleComponent>
-          </div>
-        ))}
-      </div>
+              </CollapsibleComponent>
+            </div>
+          ))}
+          {this.props.usAlignment && <SequenceAlignment
+            sequenceAlignment={this.props.usAlignment}
+            onResidueClick={(residueNumber) => {
+            }}
+          />}
+        </div>
       </Draggable>
     );
   }

@@ -23,7 +23,8 @@ export default class ChooseProteanComponent extends Component {
     handleProtean2Selection = (proteanSequenceData) => {
         this.setState({ protean2: proteanSequenceData });
         fetchSuperimposedPDBFile(this.state.protean1, proteanSequenceData).then(async (response) => {
-            this.setState({ superImposed: response, showCompare: true });
+            const { superimposedPDB, usalignOutput } = response;
+            this.setState({ superImposed: superimposedPDB, showCompare: true , usalignOutput: usalignOutput });
         });
 
     };
@@ -41,7 +42,11 @@ export default class ChooseProteanComponent extends Component {
                 {(this.state.protean1 && this.state.protean2 === null) ? <ProteanSearchComponent onSelectProtean={this.handleProtean2Selection} /> : null}
                 {this.state.protean1 && this.state.protean2 && <ProteanVisualizerComponent proteinSequences={[`rcsb://${this.state.protean2}.pdb`]} shoudlDisplaySuperImposed={false} />}
                 {this.state.protean1 && this.state.protean2 && this.state.superImposed && this.state.showCompare === true &&
-                    <ProteanVisualizerComponent proteinSequences={[this.state.superImposed, `rcsb://${this.state.protean2}.pdb`]} shoudlDisplaySuperImposed={true} />
+                    <ProteanVisualizerComponent 
+                    proteinSequences={[this.state.superImposed, `rcsb://${this.state.protean2}.pdb`]} 
+                    shoudlDisplaySuperImposed={true} 
+                    usAlignment={this.state.usalignOutput}
+                    />
                 }
 
             </div>

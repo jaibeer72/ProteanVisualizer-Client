@@ -15,6 +15,7 @@ class ProteinVisualizerComponent extends Component {
     removeOverlay: PropTypes.func.isRequired,
     changeColor: PropTypes.func.isRequired,
     overlays: PropTypes.object.isRequired,
+    usAlignment: PropTypes.string,
   }
 
   constructor(props) {
@@ -128,6 +129,7 @@ class ProteinVisualizerComponent extends Component {
             getProteanRepresentation={this.getProteanReprisentations}
             removeProteanRepresentation={this.removeRepresentationFromProtean}  
             addRepresentationToProtean={this.addRepresentationToProtean}
+            usAlignment={this.props.usAlignment}
           />
         </div>
       </div>
