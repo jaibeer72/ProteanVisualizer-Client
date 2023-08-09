@@ -31,6 +31,7 @@ class ProteinVisualizerComponent extends Component {
     this.AddProteanInfoToInfoArray = this.AddProteanInfoToInfoArray.bind(this);
     this.removeRepresentationFromProtean = this.removeRepresentationFromProtean.bind(this);
     this.addRepresentationToProtean = this.addRepresentationToProtean.bind(this);
+    this.zoomToProtean = this.zoomToProtean.bind(this);
   }
 
   componentDidMount() {
@@ -57,6 +58,31 @@ class ProteinVisualizerComponent extends Component {
       this.stage.viewer.requestRender();
     }
     loadProteins();
+    this.stage.signals.hovered.add((pickingProxy) => this.Onhovered(pickingProxy));
+  }
+  Onhovered(pickingProxy){
+    if(typeof pickingProxy !== "undefined"){
+      if(pickingProxy && (pickingProxy.atom || pickingProxy.bond)){
+        var atom = pickingProxy.atom || pickingProxy.closestBondAtom;
+        let resno = atom.resno;
+        
+        //console.log(residueIndex);
+        
+        // get cartoon representation
+        let cartoonRep = this.stage.getRepresentationsByName("cartoon");
+        let newScheme = NGL.ColormakerRegistry.addSelectionScheme([
+            ["red", resno+""],
+            ["residueindex", "*"]
+          ]);
+  
+        cartoonRep.setColor(newScheme);
+        cartoonRep.update({color:true});
+      }
+    }else{
+      let cartoonRep = this.stage.getRepresentationsByName("cartoon");
+      cartoonRep.setColor("residueindex");
+      cartoonRep.update({color:true});
+    }
   }
 
   async AddProteanToArray(protean, shouldLoadAsBlob = false) {
@@ -109,7 +135,34 @@ class ProteinVisualizerComponent extends Component {
     this.stage.autoView();
     this.stage.viewer.requestRender();
   }
-  
+  zoomToProtean(index) {
+    let atom = this.proteanArray[0].structure.getAtomProxy(index) ? this.proteanArray[0].structure.getAtomProxy(index) : this.proteanArray[1].structure.getAtomProxy(index);
+    var component = this.proteanArray[0].structure.getAtomProxy(index) ? this.proteanArray[0] : this.proteanArray[1];
+
+    if (component) {
+      component.autoView();
+      let selection = new NGL.Selection(`@${index}`);
+      component.autoView(selection);
+
+      // Manually adjust the camera position to zoom in closer
+      // var cameraZ = this.stage.viewer.camera.position.z;
+      // this.stage.viewer.camera.position.setZ(cameraZ * 0.3); // Adjust the factor as needed
+      this.stage.viewer.requestRender();
+
+      let resno = atom.resno;
+      // get cartoon representation
+      let cartoonRep = this.stage.getRepresentationsByName("cartoon");
+      let newScheme = NGL.ColormakerRegistry.addSelectionScheme([
+        ["red", resno + ""],
+        ["white" , "*"]
+      ]);
+      cartoonRep.setColor(newScheme);
+      cartoonRep.update({color:true});
+    } else {
+      console.log('No atom at index ' + index);
+    }
+  }
+
   componentDidUpdate(prevProps) {
     this.stage.handleResize();
     this.proteanArray.forEach((protean) => {
@@ -127,9 +180,10 @@ class ProteinVisualizerComponent extends Component {
             overlayID={this.overlayID}
             proteanArray={this?.proteanStructureInfoArray || []}
             getProteanRepresentation={this.getProteanReprisentations}
-            removeProteanRepresentation={this.removeRepresentationFromProtean}  
+            removeProteanRepresentation={this.removeRepresentationFromProtean}
             addRepresentationToProtean={this.addRepresentationToProtean}
             usAlignment={this.props.usAlignment}
+            zoomAtAtom={this.zoomToProtean}
           />
         </div>
       </div>

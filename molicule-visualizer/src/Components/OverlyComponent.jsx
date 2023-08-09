@@ -16,6 +16,7 @@ export default class OverlyComponent extends Component {
     removeProteanRepresentation: PropTypes.func.isRequired,
     addRepresentationToProtean: PropTypes.func.isRequired,
     usAlignment: PropTypes.string,
+    zoomAtAtom : PropTypes.func.isRequired,
   }
 
   constructor(props) {
@@ -27,8 +28,8 @@ export default class OverlyComponent extends Component {
       brushActive: true, //zoom
       toolbar: true, //current zoom & mouse position
       bubbleHelp: false,
-      zoomMax: 100, //define the maximum range of the zoom
-      showVariants: false
+      zoomMin: 0, //define the minimum range of the zoom
+      showVariants: false,
     }
     this.FeatureViewerArrays = []
     this.ProteanReprisentations = [];
@@ -70,8 +71,8 @@ export default class OverlyComponent extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    this.createFeatureViewers();
-  }
+      this.createFeatureViewers();
+    }
 
   getApplyablePreriesentationList() {
     // getting this From NGL to get supported reprisentations this is a Map
@@ -101,7 +102,6 @@ export default class OverlyComponent extends Component {
         this.config
       );
 
-      this.FeatureViewerArrays[index].zoom(0, proteanArray[index].sequence.length);
       // Find the container element that holds the components you want to remove
       const container = document.querySelector('.multiple-variant-popup');
 
@@ -159,6 +159,7 @@ export default class OverlyComponent extends Component {
           {this.props.usAlignment && <SequenceAlignment
             sequenceAlignment={this.props.usAlignment}
             onResidueClick={(residueNumber) => {
+              this.props.zoomAtAtom(residueNumber);
             }}
           />}
         </div>
